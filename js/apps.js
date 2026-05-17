@@ -43,6 +43,26 @@ const Apps = (() => {
     const features = Array.isArray(app.features) ? app.features : [];
     const screenshots = Array.isArray(app.screenshots) ? app.screenshots : [];
 
+    const dlBtn = app.download_url
+      ? Auth.isLoggedIn()
+        ? `<button class="btn-download" onclick="Apps.startDownload('${_esc(app.download_url)}')">
+             <span class="dl-icon">⊞</span>
+             <div class="dl-text">
+               <span class="dl-title">Скачать для Windows</span>
+               <span class="dl-sub">Бесплатно · Без установки</span>
+             </div>
+             <span class="dl-arrow">↓</span>
+           </button>`
+        : `<button class="btn-download btn-download-lock" onclick="document.getElementById('btn-login').click()">
+             <span class="dl-icon">⊞</span>
+             <div class="dl-text">
+               <span class="dl-title">Скачать для Windows</span>
+               <span class="dl-sub">Войдите, чтобы скачать</span>
+             </div>
+             <span class="dl-arrow">🔒</span>
+           </button>`
+      : '';
+
     const el = document.createElement('div');
     el.className = 'app-full reveal';
     el.innerHTML = `
@@ -58,11 +78,7 @@ const Apps = (() => {
           </div>
         </div>
         <div class="app-cta-row">
-          ${app.download_url
-            ? Auth.isLoggedIn()
-              ? `<a class="btn-primary" href="${_esc(app.download_url)}" target="_blank">⬇ Скачать</a>`
-              : `<button class="btn-primary" onclick="document.getElementById('btn-login').click()">⬇ Скачать</button>`
-            : ''}
+          ${dlBtn}
           ${app.appstore_url
             ? `<a class="btn-store" href="${_esc(app.appstore_url)}" target="_blank">🍎 App Store</a>`
             : ''}
@@ -125,7 +141,7 @@ const Apps = (() => {
       <div class="app-card-btns">
         ${app.download_url
           ? Auth.isLoggedIn()
-            ? `<a class="btn-primary sm" href="${_esc(app.download_url)}" target="_blank">⬇ Скачать</a>`
+            ? `<button class="btn-primary sm" onclick="Apps.startDownload('${_esc(app.download_url)}')">⬇ Скачать</button>`
             : `<button class="btn-primary sm" onclick="document.getElementById('btn-login').click()">⬇ Скачать</button>`
           : ''}
         ${app.website_url
@@ -190,6 +206,39 @@ const Apps = (() => {
     );
   }
 
+  // ── Загрузка и гид по установке ─────────────────────────────────────
+  function startDownload(url) {
+    // Запускаем скачивание
+    const a = document.createElement('a');
+    a.href = url;
+    a.target = '_blank';
+    a.rel = 'noopener';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+
+    // Показываем гид
+    const modal = document.getElementById('install-guide');
+    if (!modal) return;
+    // Сбрасываем шаги
+    for (let i = 1; i <= 4; i++) {
+      const s = document.getElementById(`igs-${i}`);
+      if (s) s.className = 'ig-step';
+    }
+    const s1 = document.getElementById('igs-1');
+    if (s1) s1.className = 'ig-step active';
+
+    modal.classList.remove('hidden');
+
+    // Через 2 с — шаг 1 выполнен, шаг 2 активен
+    setTimeout(() => {
+      const el1 = document.getElementById('igs-1');
+      const el2 = document.getElementById('igs-2');
+      if (el1) el1.className = 'ig-step done';
+      if (el2) el2.className = 'ig-step active';
+    }, 2000);
+  }
+
   async function loadAndRender() {
     const container = document.getElementById('apps-content');
     if (container) container.innerHTML = '<div class="spinner"></div>';
@@ -202,5 +251,5 @@ const Apps = (() => {
     if (window._initReveal) window._initReveal();
   }
 
-  return { loadAndRender, rerender, openLightbox, lbPrev, lbNext, lbClose, scrollTo };
+  return { loadAndRender, rerender, openLightbox, lbPrev, lbNext, lbClose, scrollTo, startDownload };
 })();

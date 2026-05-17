@@ -184,6 +184,73 @@
   <button class="lb-btn" id="lb-close" aria-label="Закрыть" style="margin-top:4px">✕</button>
 </div>
 
+<!-- Гид по установке -->
+<div id="install-guide" class="modal-overlay hidden">
+  <div class="modal install-guide-modal">
+    <button class="modal-close" onclick="document.getElementById('install-guide').classList.add('hidden')" aria-label="Закрыть">✕</button>
+    <div class="ig-header">
+      <div class="ig-app-icon">⊞</div>
+      <div>
+        <h2>Установка Vacantrix</h2>
+        <p>Файл скачивается — следуйте шагам</p>
+      </div>
+    </div>
+    <div class="ig-steps">
+      <div class="ig-step" id="igs-1">
+        <div class="ig-step-left">
+          <div class="ig-num">1</div>
+          <div class="ig-line"></div>
+        </div>
+        <div class="ig-step-body">
+          <strong>Файл загружается</strong>
+          <span>Vacantrix.exe сохраняется в папку «Загрузки»</span>
+        </div>
+        <div class="ig-check">✓</div>
+        <div class="ig-spinner"></div>
+      </div>
+      <div class="ig-step" id="igs-2">
+        <div class="ig-step-left">
+          <div class="ig-num">2</div>
+          <div class="ig-line"></div>
+        </div>
+        <div class="ig-step-body">
+          <strong>Откройте файл</strong>
+          <span>Нажмите на файл внизу браузера или нажмите <kbd>Ctrl+J</kbd></span>
+        </div>
+        <div class="ig-check">✓</div>
+        <div class="ig-spinner"></div>
+      </div>
+      <div class="ig-step" id="igs-3">
+        <div class="ig-step-left">
+          <div class="ig-num">3</div>
+          <div class="ig-line"></div>
+        </div>
+        <div class="ig-step-body">
+          <strong>Разрешите запуск</strong>
+          <span>Если Windows предупредит — нажмите «Подробнее» → «Запустить»</span>
+        </div>
+        <div class="ig-check">✓</div>
+        <div class="ig-spinner"></div>
+      </div>
+      <div class="ig-step" id="igs-4">
+        <div class="ig-step-left">
+          <div class="ig-num">4</div>
+        </div>
+        <div class="ig-step-body">
+          <strong>Приложение откроется</strong>
+          <span>Vacantrix запустится — готово!</span>
+        </div>
+        <div class="ig-check">✓</div>
+        <div class="ig-spinner"></div>
+      </div>
+    </div>
+    <div class="ig-hint">
+      <span>💡</span>
+      <span>Не видите файл? Нажмите <kbd>Ctrl+J</kbd> чтобы открыть загрузки</span>
+    </div>
+  </div>
+</div>
+
 <!-- ════════════════════════════════════════════════════════════════════
      Скрипты
 ════════════════════════════════════════════════════════════════════ -->
