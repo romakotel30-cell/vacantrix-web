@@ -147,6 +147,7 @@ a { color: inherit; text-decoration: none; }
   margin-bottom: 16px;
 }
 .hero p { color: var(--text2); font-size: 18px; max-width: 540px; margin: 0 auto; }
+.hero-cta { margin-top: 32px; display: flex; justify-content: center; }
 
 /* ── Вкладки ───────────────────────────────────────────────────────── */
 .tabs-nav {

@@ -20,10 +20,32 @@ document.addEventListener('DOMContentLoaded', async () => {
   }
   window._initReveal = _initReveal;
 
+  // ── Кнопка скачивания платформы в hero ─────────────────────────────
+  const _PLATFORM_URL = 'https://github.com/romakotel30-cell/vacantrix-platform/releases/latest/download/VacantrixLauncher.exe';
+
+  function _updateHeroBtn(user) {
+    const btn = document.getElementById('hero-platform-dl');
+    if (!btn) return;
+    const sub   = btn.querySelector('.dl-sub');
+    const arrow = btn.querySelector('.dl-arrow');
+    if (user) {
+      btn.classList.remove('btn-download-lock');
+      if (sub)   sub.textContent   = 'Бесплатно · Windows · Без установки';
+      if (arrow) arrow.textContent = '↓';
+      btn.onclick = () => Apps.startDownload(_PLATFORM_URL);
+    } else {
+      btn.classList.add('btn-download-lock');
+      if (sub)   sub.textContent   = 'Войдите, чтобы скачать';
+      if (arrow) arrow.textContent = '🔒';
+      btn.onclick = () => document.getElementById('btn-login').click();
+    }
+  }
+
   // ── Инициализация ───────────────────────────────────────────────────
   await Auth.init();
   await Platforms.loadAndRender();
   await Apps.loadAndRender();
+  _updateHeroBtn(Auth.currentUser());
   _initReveal();
 
   // ── Вкладки ─────────────────────────────────────────────────────────
@@ -116,6 +138,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     _updateNavbar(user, isAdmin);
     Apps.rerender();
     _renderSettings(user);
+    _updateHeroBtn(user);
   });
   _updateNavbar(Auth.currentUser(), Auth.isAdmin());
   _renderSettings(Auth.currentUser());
