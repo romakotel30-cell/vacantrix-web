@@ -32,7 +32,31 @@ document.addEventListener('DOMContentLoaded', async () => {
       btn.classList.remove('btn-download-lock');
       if (sub)   sub.textContent   = 'Бесплатно · Windows · Без установки';
       if (arrow) arrow.textContent = '↓';
-      btn.onclick = () => Apps.startDownload(_PLATFORM_URL);
+      btn.onclick = () => {
+        const t = document.getElementById('ig-title');
+        if (t) t.textContent = 'Установка Vacantrix Platform';
+
+        // Показываем гид по установке
+        const modal = document.getElementById('install-guide');
+        if (modal) {
+          for (let i = 1; i <= 4; i++) {
+            const s = document.getElementById(`igs-${i}`);
+            if (s) s.className = 'ig-step';
+          }
+          const s1 = document.getElementById('igs-1');
+          if (s1) s1.className = 'ig-step active';
+          modal.classList.remove('hidden');
+          setTimeout(() => {
+            const el1 = document.getElementById('igs-1');
+            const el2 = document.getElementById('igs-2');
+            if (el1) el1.className = 'ig-step done';
+            if (el2) el2.className = 'ig-step active';
+          }, 2000);
+        }
+
+        // Прямое скачивание — браузер скачивает файл без перехода на GitHub
+        window.location.href = _PLATFORM_URL;
+      };
     } else {
       btn.classList.add('btn-download-lock');
       if (sub)   sub.textContent   = 'Войдите, чтобы скачать';

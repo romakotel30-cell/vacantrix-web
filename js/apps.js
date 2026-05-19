@@ -220,6 +220,8 @@ const Apps = (() => {
     // Показываем гид
     const modal = document.getElementById('install-guide');
     if (!modal) return;
+    const igTitle = document.getElementById('ig-title');
+    if (igTitle) igTitle.textContent = 'Установка Vacantrix';
     // Сбрасываем шаги
     for (let i = 1; i <= 4; i++) {
       const s = document.getElementById(`igs-${i}`);
