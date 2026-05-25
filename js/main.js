@@ -410,11 +410,9 @@ document.addEventListener('DOMContentLoaded', () => {
     _renderSettings(curUser);
     _updateHeroBtn(curUser);
 
-    // Площадки и приложения грузим параллельно
-    await Promise.allSettled([
-      Platforms.loadAndRender().catch(e => console.warn('Platforms error:', e)),
-      Apps.loadAndRender().catch(e => console.warn('Apps error:', e)),
-    ]);
+    // Площадки (статика) и приложения
+    Platforms.loadAndRender();
+    await Apps.loadAndRender().catch(e => console.warn('Apps error:', e));
 
     _initReveal();
   })();
