@@ -28,7 +28,12 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('btn-logout')?.classList.toggle('hidden', !user);
     document.getElementById('btn-admin') ?.classList.toggle('hidden', !isAdmin);
     const ui = document.getElementById('user-info');
-    if (ui) { ui.textContent = user ? user.email : ''; ui.classList.toggle('hidden', !user); }
+    if (ui) {
+      // Показываем display_name если есть, иначе email
+      const label = user ? (Profile.displayName() || user.email) : '';
+      ui.textContent = label;
+      ui.classList.toggle('hidden', !user);
+    }
   }
 
   // ── Hero-кнопка скачивания ─────────────────────────────────────────
@@ -84,42 +89,101 @@ document.addEventListener('DOMContentLoaded', () => {
                   onclick="document.getElementById('btn-login').click()">Войти / Зарегистрироваться</button>
         </div>`;
     } else {
-      const since = new Date(user.created_at).toLocaleDateString('ru-RU',
+      const since    = new Date(user.created_at).toLocaleDateString('ru-RU',
         { year: 'numeric', month: 'long', day: 'numeric' });
-      container.innerHTML = `
-        <div class="settings-grid">
-          <div class="settings-card reveal">
-            <div class="settings-card-header"><span class="settings-icon">👤</span><h3>Профиль</h3></div>
-            <div class="settings-item">
-              <span class="settings-label">Email</span>
-              <span class="settings-value">${_escHtml(user.email)}</span>
-            </div>
-            <div class="settings-item">
-              <span class="settings-label">Аккаунт создан</span>
-              <span class="settings-value">${since}</span>
-            </div>
+      const profile  = Profile.current();
+      const dispName = Profile.displayName();
+      const sub      = Profile.subscriptionText();
+
+      // ── Карточка «Профиль» ────────────────────────────────────────────
+      const profileCard = `
+        <div class="settings-card reveal">
+          <div class="settings-card-header"><span class="settings-icon">👤</span><h3>Профиль</h3></div>
+          ${dispName ? `
+          <div class="settings-item">
+            <span class="settings-label">Ник</span>
+            <span class="settings-value" style="font-weight:600">${_escHtml(dispName)}</span>
+          </div>` : ''}
+          <div class="settings-item">
+            <span class="settings-label">Email</span>
+            <span class="settings-value">${_escHtml(user.email)}</span>
           </div>
-          <div class="settings-card reveal" style="transition-delay:.08s">
-            <div class="settings-card-header"><span class="settings-icon">🔐</span><h3>Безопасность</h3></div>
-            <div class="settings-row">
-              <div class="settings-row-info">
-                <span class="settings-label">Пароль</span>
-                <div class="settings-sub">Изменить пароль от аккаунта</div>
-              </div>
-              <button class="btn-outline sm" id="btn-change-pwd">Изменить</button>
-            </div>
+          <div class="settings-item">
+            <span class="settings-label">Аккаунт создан</span>
+            <span class="settings-value">${since}</span>
           </div>
-          <div class="settings-card danger-card reveal" style="transition-delay:.16s">
-            <div class="settings-card-header"><span class="settings-icon">🚪</span><h3>Выход</h3></div>
-            <div class="settings-row">
-              <div class="settings-row-info">
-                <span class="settings-label">Завершить сессию</span>
-                <div class="settings-sub">Выйти из аккаунта на этом устройстве</div>
-              </div>
-              <button class="btn-danger sm" id="btn-settings-logout">Выйти</button>
+          ${sub ? `
+          <div class="settings-item">
+            <span class="settings-label">Подписка</span>
+            <span class="settings-value" style="color:${sub.active ? '#50c878' : '#e05555'}">${_escHtml(sub.text)}</span>
+          </div>` : ''}
+        </div>`;
+
+      // ── Карточка «Приложения» ─────────────────────────────────────────
+      const hhLinked    = !!profile?.hh_applicant_id;
+      const avitoLinked = !!profile?.avito_user_id;
+
+      const appsCard = `
+        <div class="settings-card reveal" style="transition-delay:.08s">
+          <div class="settings-card-header"><span class="settings-icon">🔗</span><h3>Подключённые приложения</h3></div>
+          <div class="settings-item">
+            <span class="settings-label">HH.ru бот</span>
+            <span class="settings-value" style="color:${hhLinked ? '#50c878' : '#7878a0'}">
+              ${hhLinked ? '✓ ' + _escHtml(profile.hh_username || profile.hh_applicant_id) : 'Не подключён'}
+            </span>
+          </div>
+          <div class="settings-item">
+            <span class="settings-label">Авито бот</span>
+            <span class="settings-value" style="color:${avitoLinked ? '#50c878' : '#7878a0'}">
+              ${avitoLinked ? '✓ ' + _escHtml(profile.avito_username || profile.avito_user_id) : 'Не подключён'}
+            </span>
+          </div>
+          ${!hhLinked && !avitoLinked ? `
+          <div style="margin-top:10px">
+            <div class="settings-sub" style="margin-bottom:8px">
+              Введите ID из десктоп-приложения (кнопка «📋 Копировать ID») чтобы привязать аккаунт.
             </div>
+            <div style="display:flex;gap:8px;flex-wrap:wrap">
+              <input id="link-hh-id" class="input-sm" placeholder="HH applicant ID" style="flex:1;min-width:140px">
+              <button class="btn-outline sm" id="btn-link-hh">Привязать HH</button>
+            </div>
+            <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:6px">
+              <input id="link-avito-id" class="input-sm" placeholder="Avito user ID" style="flex:1;min-width:140px">
+              <button class="btn-outline sm" id="btn-link-avito">Привязать Авито</button>
+            </div>
+            <div id="link-error" style="color:#e05555;font-size:12px;margin-top:6px"></div>
+          </div>` : `
+          <div style="margin-top:8px">
+            <button class="btn-ghost sm" id="btn-unlink-apps" style="font-size:12px;color:#7878a0">Отвязать</button>
+          </div>`}
+        </div>`;
+
+      // ── Безопасность + выход ──────────────────────────────────────────
+      const secCard = `
+        <div class="settings-card reveal" style="transition-delay:.16s">
+          <div class="settings-card-header"><span class="settings-icon">🔐</span><h3>Безопасность</h3></div>
+          <div class="settings-row">
+            <div class="settings-row-info">
+              <span class="settings-label">Пароль</span>
+              <div class="settings-sub">Изменить пароль от аккаунта</div>
+            </div>
+            <button class="btn-outline sm" id="btn-change-pwd">Изменить</button>
+          </div>
+        </div>
+        <div class="settings-card danger-card reveal" style="transition-delay:.24s">
+          <div class="settings-card-header"><span class="settings-icon">🚪</span><h3>Выход</h3></div>
+          <div class="settings-row">
+            <div class="settings-row-info">
+              <span class="settings-label">Завершить сессию</span>
+              <div class="settings-sub">Выйти из аккаунта на этом устройстве</div>
+            </div>
+            <button class="btn-danger sm" id="btn-settings-logout">Выйти</button>
           </div>
         </div>`;
+
+      container.innerHTML = `<div class="settings-grid">${profileCard}${appsCard}${secCard}</div>`;
+
+      // ── Обработчики ───────────────────────────────────────────────────
       document.getElementById('btn-change-pwd')?.addEventListener('click', () => {
         document.getElementById('pwd-error').textContent = '';
         document.getElementById('pwd-new').value = '';
@@ -128,6 +192,44 @@ document.addEventListener('DOMContentLoaded', () => {
       });
       document.getElementById('btn-settings-logout')?.addEventListener('click', async () => {
         await Auth.signOut();
+      });
+
+      // Привязка HH
+      document.getElementById('btn-link-hh')?.addEventListener('click', async () => {
+        const id  = document.getElementById('link-hh-id')?.value.trim();
+        const err = document.getElementById('link-error');
+        if (!id) { if (err) err.textContent = 'Введите HH applicant ID.'; return; }
+        if (err) err.textContent = '';
+        try {
+          await Profile.linkHH(id, user.id);
+          _renderSettings(user);  // перерисовываем с обновлёнными данными
+          _updateNavbar(user, Auth.isAdmin());
+        } catch (e) {
+          if (err) err.textContent = e.message;
+        }
+      });
+
+      // Привязка Авито
+      document.getElementById('btn-link-avito')?.addEventListener('click', async () => {
+        const id  = document.getElementById('link-avito-id')?.value.trim();
+        const err = document.getElementById('link-error');
+        if (!id) { if (err) err.textContent = 'Введите Avito user ID.'; return; }
+        if (err) err.textContent = '';
+        try {
+          await Profile.linkAvito(id, user.id);
+          _renderSettings(user);
+          _updateNavbar(user, Auth.isAdmin());
+        } catch (e) {
+          if (err) err.textContent = e.message;
+        }
+      });
+
+      // Отвязать
+      document.getElementById('btn-unlink-apps')?.addEventListener('click', async () => {
+        if (!confirm('Отвязать приложения от этого аккаунта?')) return;
+        await Profile.unlink();
+        _renderSettings(user);
+        _updateNavbar(user, Auth.isAdmin());
       });
     }
     _initReveal();
@@ -273,7 +375,11 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   // ── Подписка на изменения авторизации ────────────────────────────────
-  Auth.onChange((user, isAdmin) => {
+  Auth.onChange(async (user, isAdmin) => {
+    if (user) {
+      // Загружаем профиль из vx_profiles и потом обновляем UI
+      await Profile.load(user.id);
+    }
     _updateNavbar(user, isAdmin);
     Apps.rerender();
     _renderSettings(user);
@@ -297,10 +403,12 @@ document.addEventListener('DOMContentLoaded', () => {
       if (e.message !== 'auth_timeout') console.warn('Auth.init error:', e.message);
     }
 
-    // Обновляем UI после auth (может изменился статус)
-    _updateNavbar(Auth.currentUser(), Auth.isAdmin());
-    _renderSettings(Auth.currentUser());
-    _updateHeroBtn(Auth.currentUser());
+    // Загружаем профиль платформы и обновляем UI
+    const curUser = Auth.currentUser();
+    if (curUser) await Profile.load(curUser.id);
+    _updateNavbar(curUser, Auth.isAdmin());
+    _renderSettings(curUser);
+    _updateHeroBtn(curUser);
 
     // Площадки и приложения грузим параллельно
     await Promise.allSettled([
